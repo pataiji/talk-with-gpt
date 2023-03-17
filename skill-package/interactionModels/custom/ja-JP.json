@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "hello world",
+            "invocationName": "gpt",
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
@@ -16,16 +16,15 @@
                     "samples": []
                 },
                 {
-                    "name": "HelloWorldIntent",
-                    "slots": [],
+                    "name": "ChatIntent",
+                    "slots": [
+                        {
+                            "name": "utterance",
+                            "type": "AMAZON.Color"
+                        }
+                    ],
                     "samples": [
-                        "hello",
-                        "how are you",
-                        "say hi world",
-                        "say hi",
-                        "hi",
-                        "say hello world",
-                        "say hello"
+                        "{utterance}"
                     ]
                 },
                 {
@@ -37,4 +36,3 @@
         }
     }
   }
-  

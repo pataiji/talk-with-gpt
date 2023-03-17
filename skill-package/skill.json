@@ -2,24 +2,29 @@
   "manifest": {
     "publishingInformation": {
       "locales": {
-        "en-US": {
-          "summary": "Sample Short Description",
+        "ja-JP": {
+          "summary": "Talk with GPT",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "アレクサ、GPTを起動して",
+            "こんにちは"
           ],
           "name": "talk-with-gpt",
-          "description": "Sample Full Description"
+          "description": "Talk with GPT"
         }
       },
-      "isAvailableWorldwide": true,
+      "isAvailableWorldwide": false,
       "testingInstructions": "Sample Testing Instructions.",
       "category": "KNOWLEDGE_AND_TRIVIA",
-      "distributionCountries": []
+      "distributionCountries": [
+        "JP"
+      ]
     },
     "apis": {
-      "custom": {}
+      "custom": {
+        "endpoint": {
+          "uri": "<replace>"
+        }
+      }
     },
     "manifestVersion": "1.0"
   }

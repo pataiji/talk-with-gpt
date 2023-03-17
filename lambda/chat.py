@@ -5,6 +5,7 @@
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
 import logging
+import os
 
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
@@ -14,19 +15,23 @@ from ask_sdk_core.handler_input import HandlerInput
 
 from ask_sdk_model import Response
 
+import openai
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+messages = []
 
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        
+
         return ask_utils.is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Welcome, you can say Hello or Help. Which would you like to try?"
+        speak_output = "呼んだ？"
 
         return (
             handler_input.response_builder
@@ -36,20 +41,40 @@ class LaunchRequestHandler(AbstractRequestHandler):
         )
 
 
-class HelloWorldIntentHandler(AbstractRequestHandler):
-    """Handler for Hello World Intent."""
+class ChatIntentHandler(AbstractRequestHandler):
+    """Handler for Chat Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("HelloWorldIntent")(handler_input)
+        return ask_utils.is_intent_name("ChatIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Hello Python World from Classes!"
+
+        utterance = ask_utils.get_slot_value(handler_input, "utterance")
+        logger.info(utterance)
+
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+
+        messages.append({"role": "user", "content": utterance})
+
+        logger.info(messages)
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.7
+        )
+        resp_content = response.choices[0].message.content
+        logger.info(resp_content)
+
+        messages.append({"role": "assistant", "content": resp_content})
+
+        speak_output = resp_content
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                # .ask("add a reprompt if you want to keep the session open for the user to respond")
+                .ask(speak_output)
                 .response
         )
 
@@ -62,7 +87,7 @@ class HelpIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "You can say hello to me! How can I help?"
+        speak_output = "何でも話してご覧よ！"
 
         return (
             handler_input.response_builder
@@ -81,7 +106,9 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Goodbye!"
+        speak_output = "じゃあね！"
+
+        messages.clear()
 
         return (
             handler_input.response_builder
@@ -100,6 +127,7 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
 
         # Any cleanup logic goes here.
+        messages.clear()
 
         return handler_input.response_builder.response
 
@@ -139,7 +167,7 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
         # type: (HandlerInput, Exception) -> Response
         logger.error(exception, exc_info=True)
 
-        speak_output = "Sorry, I had trouble doing what you asked. Please try again."
+        speak_output = "ボカーンしたのでもう一度お願い"
 
         return (
             handler_input.response_builder
@@ -155,7 +183,7 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
-sb.add_request_handler(HelloWorldIntentHandler())
+sb.add_request_handler(ChatIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
